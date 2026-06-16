@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreditSight — Alternative Credit Scoring</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0D0F12;
+    --ink-2: #3A3E45;
+    --ink-3: #7A808A;
+    --surface: #F7F8FA;
+    --card: #FFFFFF;
+    --border: #E4E7EC;
+    --accent: #1A56DB;
+    --accent-light: #EEF3FF;
+    --green: #0E7A45;
+    --green-light: #EDFAF3;
+    --amber: #92510A;
+    --amber-light: #FEF6E7;
+    --red: #B91C1C;
+    --red-light: #FEF2F2;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .logo-dot {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-dot svg { width: 16px; height: 16px; fill: white; }
+  .header-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+  }
+
+  /* HERO */
+  .hero {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 2rem;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 span {
+    color: var(--accent);
+  }
+  .hero p {
+    font-size: 16px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* MAIN LAYOUT */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 1.25rem;
+  }
+
+  /* FORM */
+  .field { margin-bottom: 1.1rem; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    margin-bottom: 6px;
+  }
+  .field .hint {
+    font-size: 11px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .slider-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    min-width: 44px;
+    text-align: right;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="number"]:focus { border-color: var(--accent); background: white; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: -0.01em;
+  }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* RESULT PANEL */
+  .result-panel { position: sticky; top: 76px; }
+
+  /* SCORE GAUGE */
+  .gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0 1rem;
+  }
+  .gauge-svg { width: 200px; height: 110px; }
+  .gauge-score {
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    margin-top: -8px;
+    font-family: 'DM Mono', monospace;
+    transition: color 0.4s;
+  }
+  .gauge-label {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* RISK BAND */
+  .risk-band {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 1rem auto;
+    width: fit-content;
+    transition: all 0.3s;
+  }
+  .risk-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .band-low { background: var(--green-light); color: var(--green); }
+  .band-low .risk-dot { background: var(--green); }
+  .band-medium { background: var(--amber-light); color: var(--amber); }
+  .band-medium .risk-dot { background: var(--amber); }
+  .band-high { background: var(--red-light); color: var(--red); }
+  .band-high .risk-dot { background: var(--red); }
+  .band-empty { background: var(--surface); color: var(--ink-3); }
+  .band-empty .risk-dot { background: var(--border); }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .stat-cell {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+  }
+  .stat-cell-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .stat-cell-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.25rem 0;
+  }
+
+  /* FACTOR LIST */
+  .factor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--surface);
+    font-size: 13px;
+  }
+  .factor:last-child { border-bottom: none; }
+  .factor-name { color: var(--ink-2); }
+  .factor-val {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* PLACEHOLDER STATE */
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+  }
+  .placeholder-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .placeholder p {
+    font-size: 13px;
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
+
+  /* LOADING */
+  .spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 2rem auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ERROR */
+  .error-box {
+    background: var(--red-light);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 1rem;
+    display: none;
+  }
+
+  /* FOOTER NOTE */
+  .footnote {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2rem;
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
+
+  /* GAUGE ARC TRANSITION */
+  #gauge-arc { transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-dot">
+      <svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM6.5 5.5a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm1.5 6a4 4 0 01-3.46-2h6.92A4 4 0 018 11.5z"/></svg>
+    </div>
+    CreditSight
+  </a>
+  <span class="header-tag">Research Demo</span>
+</header>
+
+<div class="hero">
+  <p class="hero-eyebrow">Alternative Credit Scoring · India</p>
+  <h1>Credit access for the <span>190 million</span> overlooked</h1>
+  <p>This model scores loan applicants using behavioral signals — not CIBIL history. Fill in what you know about a borrower to get a risk assessment.</p>
+</div>
+
+<div class="main">
+
+  <!-- LEFT: FORM -->
+  <div class="card">
+    <p class="card-title">Borrower profile</p>
+
+    <div class="field">
+      <label>Payment regularity</label>
+      <span class="hint">Proportion of past payments made on time (0 = never, 1 = always)</span>
+      <div class="slider-row">
+        <input type="range" id="pct_on_time" min="0" max="1" step="0.01" value="0.75"
+          oninput="document.getElementById('v_pct').textContent=parseFloat(this.value).toFixed(2)">
+        <span class="slider-val" id="v_pct">0.75</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Average days late on payments</label>
+      <span class="hint">Negative = paid early. Positive = paid late. 0 = exactly on time.</span>
+      <div class="slider-row">
+        <input type="range" id="avg_days_late" min="-30" max="60" step="0.5" value="-2"
+          oninput="document.getElementById('v_late').textContent=parseFloat(this.value).toFixed(1)+'d'">
+        <span class="slider-val" id="v_late">-2.0d</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Number of credit product types used</label>
+      <span class="hint">e.g. credit card + personal loan + home loan = 3</span>
+      <div class="slider-row">
+        <input type="range" id="num_credit_types" min="0" max="10" step="1" value="3"
+          oninput="document.getElementById('v_ct').textContent=this.value">
+        <span class="slider-val" id="v_ct">3</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Loan approval rate (past applications)</label>
+      <span class="hint">Proportion of previous loan applications that were approved</span>
+      <div class="slider-row">
+        <input type="range" id="approval_rate" min="0" max="1" step="0.01" value="0.6"
+          oninput="document.getElementById('v_ar').textContent=parseFloat(this.value).toFixed(2)">
+        <span class="slider-val" id="v_ar">0.60</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Annual income (₹)</label>
+      <span class="hint">Total yearly income in rupees</span>
+      <input type="number" id="AMT_INCOME_TOTAL" value="180000" min="10000" max="10000000">
+    </div>
+
+    <div class="field">
+      <label>Age (years)</label>
+      <span class="hint">Applicant's age</span>
+      <input type="number" id="age_years" value="33" min="18" max="75">
+    </div>
+
+    <div class="field">
+      <label>External credit score</label>
+      <span class="hint">Normalised third-party credit rating (0 = lowest, 1 = highest)</span>
+      <div class="slider-row">
+        <input type="range" id="EXT_SOURCE_2" min="0" max="1" step="0.01" value="0.5"
+          oninput="document.getElementById('v_ext').textContent=parseFloat(this.value).toFixed(2)">
+        <span class="slider-val" id="v_ext">0.50</span>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="scoreBtn" onclick="getScore()">Calculate credit score →</button>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <!-- RIGHT: RESULT -->
+  <div class="result-panel">
+    <div class="card">
+      <p class="card-title">Credit assessment</p>
+
+      <div id="placeholderState" class="placeholder">
+        <div class="placeholder-icon">
+          <svg width="22" height="22" fill="none" stroke="#1A56DB" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+        </div>
+        <p>Fill in the borrower profile on the left and click Calculate to generate a credit assessment.</p>
+      </div>
+
+      <div id="loadingState" style="display:none;">
+        <div class="spinner"></div>
+      </div>
+
+      <div id="resultState" style="display:none;">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 200 110">
+            <!-- background arc -->
+            <path d="M 20 100 A 80 80 0 0 1 180 100"
+              fill="none" stroke="#E4E7EC" stroke-width="12"
+              stroke-linecap="round"/>
+            <!-- colored arc -->
+            <path id="gauge-arc"
+              d="M 20 100 A 80 80 0 0 1 180 100"
+              fill="none" stroke="#1A56DB" stroke-width="12"
+              stroke-linecap="round"
+              stroke-dasharray="251.2"
+              stroke-dashoffset="251.2"/>
+          </svg>
+          <div class="gauge-score" id="scoreDisplay">—</div>
+          <div class="gauge-label">out of 900</div>
+        </div>
+
+        <div class="risk-band band-empty" id="riskBand">
+          <span class="risk-dot"></span>
+          <span id="riskLabel">—</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-cell">
+            <div class="stat-cell-label">Default probability</div>
+            <div class="stat-cell-val" id="probDisplay">—</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">Score percentile</div>
+            <div class="stat-cell-val" id="percentileDisplay">—</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="card-title">Inputs used</p>
+        <div id="factorList"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem; padding: 1rem 1.5rem;">
+      <p style="font-size:12px; color:var(--ink-3); line-height:1.6;">
+        <strong style="color:var(--ink-2); font-weight:500;">Research model.</strong>
+        Built on Home Credit Default Risk data (307,511 applications) using LightGBM with behavioral feature engineering and Fairlearn fairness constraints. Not a substitute for regulated credit assessment.
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:8000';
+
+async function getScore() {
+  const btn = document.getElementById('scoreBtn');
+  const err = document.getElementById('errorBox');
+  err.style.display = 'none';
+
+  const age = parseFloat(document.getElementById('age_years').value) || 33;
+  const days_birth = -(age * 365);
+
+  const payload = {
+    pct_on_time:      parseFloat(document.getElementById('pct_on_time').value),
+    avg_days_late:    parseFloat(document.getElementById('avg_days_late').value),
+    num_credit_types: parseInt(document.getElementById('num_credit_types').value),
+    approval_rate:    parseFloat(document.getElementById('approval_rate').value),
+    AMT_INCOME_TOTAL: parseFloat(document.getElementById('AMT_INCOME_TOTAL').value),
+    DAYS_BIRTH:       days_birth,
+    EXT_SOURCE_2:     parseFloat(document.getElementById('EXT_SOURCE_2').value)
+  };
+
+  showState('loading');
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(API + '/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('API returned ' + res.status);
+    const data = await res.json();
+    renderResult(data, payload);
+    showState('result');
+  } catch (e) {
+    err.textContent = 'Could not reach the API. Make sure uvicorn is running on localhost:8000.';
+    err.style.display = 'block';
+    showState('placeholder');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderResult(data, payload) {
+  const score = data.score;
+  const prob  = data.probability;
+  const band  = data.risk_band;
+
+  // Score display
+  document.getElementById('scoreDisplay').textContent = score;
+
+  // Gauge arc — score range 100–900, arc length 251.2
+  const pct = (score - 100) / 800;
+  const offset = 251.2 * (1 - pct);
+  const arc = document.getElementById('gauge-arc');
+  arc.style.strokeDashoffset = offset;
+
+  const color = band === 'Low risk' ? '#0E7A45' : band === 'Medium risk' ? '#92510A' : '#B91C1C';
+  arc.style.stroke = color;
+  document.getElementById('scoreDisplay').style.color = color;
+
+  // Probability
+  document.getElementById('probDisplay').textContent = (prob * 100).toFixed(1) + '%';
+
+  // Percentile (rough mapping)
+  const pctile = Math.round(pct * 100);
+  document.getElementById('percentileDisplay').textContent = pctile + 'th';
+
+  // Risk band
+  const rb = document.getElementById('riskBand');
+  rb.className = 'risk-band ' +
+    (band === 'Low risk' ? 'band-low' : band === 'Medium risk' ? 'band-medium' : 'band-high');
+  document.getElementById('riskLabel').textContent = band;
+
+  // Factor list
+  const factors = [
+    { name: 'Payment regularity', val: (payload.pct_on_time * 100).toFixed(0) + '% on time' },
+    { name: 'Avg. days late', val: payload.avg_days_late.toFixed(1) + ' days' },
+    { name: 'Credit product types', val: payload.num_credit_types },
+    { name: 'Approval rate', val: (payload.approval_rate * 100).toFixed(0) + '%' },
+    { name: 'Annual income', val: '₹' + payload.AMT_INCOME_TOTAL.toLocaleString('en-IN') },
+    { name: 'Age', val: Math.round(Math.abs(payload.DAYS_BIRTH) / 365) + ' years' },
+    { name: 'External credit score', val: payload.EXT_SOURCE_2.toFixed(2) }
+  ];
+
+  document.getElementById('factorList').innerHTML = factors.map(f =>
+    `<div class="factor">
+      <span class="factor-name">${f.name}</span>
+      <span class="factor-val">${f.val}</span>
+    </div>`
+  ).join('');
+}
+
+function showState(state) {
+  document.getElementById('placeholderState').style.display = state === 'placeholder' ? 'flex' : 'none';
+  document.getElementById('loadingState').style.display    = state === 'loading'     ? 'block' : 'none';
+  document.getElementById('resultState').style.display     = state === 'result'      ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>
