@@ -22,3 +22,20 @@ Then open index.html in your browser.
 ## Research
 Targeting FAccT 2026 submission.
 Dataset: Home Credit Default Risk (307,511 applications)
+
+## Results
+Logistic Regression: 0.6228
+XGBoost: 0.7649
+LightGBM: 0.7638
+
+## Ablation study
+Traditional only: 0.734
+Behavioral only: 0.6297
+All features: 0.7444
+Lift from behavioral features: 0.0104
+
+## Fairness audit
+- Demographic Parity Difference (unconstrained): 0.2839
+- Demographic Parity Difference (constrained): 0.0096
+- Fairness improvement: 0.2743
+- AUC cost of fairness constraint: 0.7638
